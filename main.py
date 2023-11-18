@@ -14,6 +14,8 @@ CORS(app)
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
+logger.info("Starting...")
+
 def success_json_response(payload):
   """
   Turns payload into a JSON HTTP200 response
