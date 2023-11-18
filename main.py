@@ -1,4 +1,5 @@
 import logging
+import sys
 #import boto3
 
 import awsgi
@@ -10,8 +11,7 @@ from error_handler import error_handler, BadRequestException
 #logging.basicConfig(level=logging.INFO, format='%(asctime)s [%(levelname)s] (%(threadName)-10s) %(message)s')
 app = Flask(__name__)
 CORS(app)
-#logger = logging.getLogger(__name__)
-logging.basicConfig(level=logging.INFO)
+logging.basicConfig(stream=sys.stdout, level=logging.DEBUG)
 logger = logging.getLogger(__name__)
 
 logger.info("Starting...")
