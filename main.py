@@ -36,6 +36,7 @@ def echo():
     raise BadRequestException("Request must be JSON")
 
 def lambda_handler(event, context):
+  print("in lambda_handler")
   logger.info("Event: %s", event)
   logger.info("Context: %s", event)
   return awsgi.response(app, event, context, base64_content_types={"image/png"})
