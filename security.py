@@ -31,7 +31,7 @@ def get_username(f):
       logger.error("get_username: event missing from app context")
       raise SystemFailureException("Event is missing from request context")
     else:
-      logger.error("get_username: event is present in the request context")
+      logger.info("get_username: event is present in the request context")
       if "requestContext" in request.environ["awsgi.event"]:
         rc = request.environ["awsgi.event"]["requestContext"]
         if "authorizer" in rc:

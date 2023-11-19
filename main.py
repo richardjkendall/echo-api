@@ -44,8 +44,19 @@ def echo(username):
   else:
     raise BadRequestException("Request must be JSON")
 
+@app.before_request
+def log_request():
+  logger.info("before_request: Request headers: %s", request.headers)
+  logger.info("before_request: Request body: %s", request.get_data().decode("utf-8"))
+
+@app.after_request
+def log_response(response):
+  logger.info("after_request: Response body: %s", response.get_data().decode("utf-8"))
+  return response
+
 def lambda_handler(event, context):
-  print("Event: {}".format(json.dumps(event)))
+  #print("Event: {}".format(json.dumps(event)))
+  logger.info("lambda_handler: new request, event %s", json.dumps(event))
   return awsgi.response(app, event, context, base64_content_types={"image/png"})
 
 if __name__ == "__main__":
