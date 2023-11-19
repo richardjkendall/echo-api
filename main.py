@@ -5,16 +5,16 @@ import json
 
 import awsgi
 from flask_cors import CORS
-from flask import Flask, jsonify, make_response, request
+from flask import Flask, jsonify, make_response, request, g
 
 from error_handler import error_handler, BadRequestException
+from security import inject_event, get_username
 
-#logging.basicConfig(level=logging.INFO, format='%(asctime)s [%(levelname)s] (%(threadName)-10s) %(message)s')
-app = Flask(__name__)
-CORS(app)
-logging.basicConfig(stream=sys.stdout, level=logging.DEBUG)
+logging.basicConfig(level=logging.INFO, format='%(asctime)s [%(levelname)s] (%(threadName)-10s) %(message)s')
 logger = logging.getLogger(__name__)
 
+app = Flask(__name__)
+CORS(app)
 logger.info("Starting...")
 
 def success_json_response(payload):
@@ -27,17 +27,22 @@ def success_json_response(payload):
 
 @app.route("/", methods=["POST"])
 @error_handler
-def echo():
+@inject_event
+@get_username
+def echo(username):
   """
   Echos back the request if it is JSON, otherwise returns an error
   """
   if request.json:
-    return(success_json_response(request.json))
+    payload = request.json
+    payload["username"] = username
+    return(success_json_response(payload))
   else:
     raise BadRequestException("Request must be JSON")
 
 def lambda_handler(event, context):
   print("Event: {}".format(json.dumps(event)))
+  g.event = event
   return awsgi.response(app, event, context, base64_content_types={"image/png"})
 
 if __name__ == "__main__":
