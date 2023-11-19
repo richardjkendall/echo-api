@@ -4,7 +4,7 @@ from flask import g
 
 from error_handler import AccessDeniedException, SystemFailureException
 
-logger = logging.getLogger(__name__)
+logger = logging.getLogger()
 
 def load_event_from_json(filename):
   """

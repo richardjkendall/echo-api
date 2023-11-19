@@ -10,8 +10,12 @@ from flask import Flask, jsonify, make_response, request, g
 from error_handler import error_handler, BadRequestException
 from security import inject_event, get_username
 
-logging.basicConfig(level=logging.INFO, format='%(asctime)s [%(levelname)s] (%(threadName)-10s) %(message)s')
-logger = logging.getLogger(__name__)
+# fix for compatability with AWS lambda logging
+if len(logging.getLogger().handlers) > 0:
+  logging.getLogger().setLevel(logging.INFO)
+else:
+  logging.basicConfig(level=logging.INFO, format='%(asctime)s [%(levelname)s] (%(threadName)-10s) %(message)s')
+logger = logging.getLogger()
 
 app = Flask(__name__)
 CORS(app)
@@ -42,7 +46,8 @@ def echo(username):
 
 def lambda_handler(event, context):
   print("Event: {}".format(json.dumps(event)))
-  g.event = event
+  with app.app_context():
+    g.event = event
   return awsgi.response(app, event, context, base64_content_types={"image/png"})
 
 if __name__ == "__main__":
