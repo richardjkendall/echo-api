@@ -16,10 +16,10 @@ if len(logging.getLogger().handlers) > 0:
 else:
   logging.basicConfig(level=logging.INFO, format='%(asctime)s [%(levelname)s] (%(threadName)-10s) %(message)s')
 logger = logging.getLogger()
+logger.info("Starting...")
 
 app = Flask(__name__)
 CORS(app)
-logger.info("Starting...")
 
 def success_json_response(payload):
   """
@@ -46,8 +46,6 @@ def echo(username):
 
 def lambda_handler(event, context):
   print("Event: {}".format(json.dumps(event)))
-  with app.app_context():
-    g.event = event
   return awsgi.response(app, event, context, base64_content_types={"image/png"})
 
 if __name__ == "__main__":

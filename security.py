@@ -1,6 +1,6 @@
 import logging, os, json
 from functools import wraps
-from flask import g
+from flask import request
 
 from error_handler import AccessDeniedException, SystemFailureException
 
@@ -27,13 +27,13 @@ def get_username(f):
     If the event is missing from the event context this will fail
     """
     logger.info("get_username has started")
-    if "event" not in g:
+    if "awsgi.event" not in request.environ:
       logger.error("get_username: event missing from app context")
-      raise SystemFailureException("Event is missing from app context")
+      raise SystemFailureException("Event is missing from request context")
     else:
-      logger.error("get_username: event is present in the app context")
-      if "requestContext" in g.event:
-        rc = g.event["requestContext"]
+      logger.error("get_username: event is present in the request context")
+      if "requestContext" in request.environ["awsgi.event"]:
+        rc = request.environ["awsgi.event"]["requestContext"]
         if "authorizer" in rc:
           a = rc["authorizer"]
           if "claims" in a:
@@ -43,8 +43,10 @@ def get_username(f):
               email = claims["email"]
               logger.info(f"get_username: got email of {email}")
               return f(email, *args, **kwargs)
+            else:
+              logger.error("get_username: cannot find email in claims")
           else:
-            logger.error("get_username: cannot find in claims")
+            logger.error("get_username: cannot find claims")
         else:
           logger.error("get_username: cannot find authorizer")
       else:
@@ -65,16 +67,16 @@ def inject_event(f):
     If there's no NON_PROD environment variable set this will fail
     """
     logger.info("inject_event has started")
-    if "event" not in g:
+    if "awsgi.event" not in request.environ:
       if "NON_PROD" not in os.environ:
-        logger.info("inject_event: no event in app context and not in NON_PROD mode")
+        logger.info("inject_event: no event in request context and not in NON_PROD mode")
         raise AccessDeniedException("No JWT claims available")
-      logger.info("inject_event: no event in app context, loading from event.json")
+      logger.info("inject_event: no event in request context, loading from event.json")
       event = load_event_from_json("event.json")
-      g.event = event
+      request.environ["awsgi.event"] = event
       logger.info("inject_event: event injected")
     else:
-      logger.info("inject_event: event is already present in the app context")
+      logger.info("inject_event: event is already present in the request context")
     return f(*args, **kwargs)
   
   return decorated_function
