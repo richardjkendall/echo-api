@@ -1,0 +1,13 @@
+version: 0.2
+phases:
+  install:
+    commands:
+      - echo "install step"
+  pre_build:
+    commands:
+      - echo "any prebuild actvities"
+  build:
+    commands:
+      - echo Building 
+      - mkdir -p output
+      - REPO=https://github.com/richardjkendall/echo-api docker run --rm -v ./output:/output richardjkendall/lambda-builder
