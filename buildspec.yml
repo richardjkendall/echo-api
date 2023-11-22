@@ -10,4 +10,5 @@ phases:
     commands:
       - echo Building 
       - mkdir -p output
+      - chmod -R 777 output
       - docker run --rm -e REPO='https://github.com/richardjkendall/echo-api' -v $(pwd)/output:/output richardjkendall/lambda-builder
